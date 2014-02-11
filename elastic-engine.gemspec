@@ -29,12 +29,12 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rails", "3.2.16"
   s.add_development_dependency "elasticsearch-ruby"
   s.add_development_dependency "elasticsearch-extensions"
-  s.add_development_dependency "elasticsearch-model"
   s.add_development_dependency "sqlite3"
-  s.add_development_dependency "activesupport", "> 3.0"
-  s.add_development_dependency "activemodel",   "> 3.0"
-  s.add_development_dependency "activerecord",  "> 3.0"
-  s.add_development_dependency "rspec"
+  s.add_development_dependency "rspec", "~> 2.6"
+
+  s.add_development_dependency "activesupport", "3.2.16"
+  s.add_development_dependency "activemodel",   "3.2.16"
+  s.add_development_dependency "activerecord",  "3.2.16"
   s.add_development_dependency "oj"
   s.add_development_dependency "kaminari"
 

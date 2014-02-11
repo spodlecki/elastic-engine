@@ -9,7 +9,7 @@ module ElasticEngine
 
       module ClassMethods
         def facets
-          @facets
+          @facets || []
         end
         def facet(name, field, operator, title)
           @facets ||= {}

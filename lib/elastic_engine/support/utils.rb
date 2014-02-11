@@ -10,7 +10,7 @@ module ElasticEngine
       EXEC_TYPES = [:and,:or]
       
       def __validate_integer(int, default = 0, positive_only = true)
-        int = int.try(:to_i) if int =~ /\A[0-9]+\z/
+        int = int.try(:to_i) if int =~ /\A-?[0-9]+\z/
 
         return int if int.is_a?(Integer) && (positive_only && int > 0 || !positive_only)
         default

@@ -4,6 +4,11 @@ module Searchable
   included do
     include Elasticsearch::Model
     include Elasticsearch::Model::Callbacks
+    index_name 'test_fakeapplication'
+
+    after_save {  __elasticsearch__.index_document }
+    before_destroy {  __elasticsearch__.delete_document }
+    after_touch() { __elasticsearch__.index_document }
 
     # Set up the mapping
     #
@@ -12,12 +17,15 @@ module Searchable
         indexes :name,      analyzer: 'snowball'
         indexes :created_at, type: 'date'
 
-        indexes :tags, type: 'multi_field' do
+        indexes :tags, type: 'object' do
           indexes :name
           indexes :id
         end
 
-        indexes :body_type
+        indexes :body_types, type: 'object' do
+          indexes :name
+          indexes :id
+        end
       end
     end
 
@@ -25,16 +33,12 @@ module Searchable
     #
     def as_indexed_json(options={})
       {
-        id: title,
+        id: id,
         name: name,
-        created_at:  created_at,
-        body_type:    body_type.as_json(only: [:name, :id]),
-        tags:   tags.as_json(only: [:name, :id])
+        body_types: body_types.map{ |x| {id: x.id, name: x.name} },
+        tags: tags.map{ |x| {id: x.id, name: x.name} },
+        created_at: created_at
       }
     end
-
-    # Update document in the index after touch
-    #
-    after_touch() { __elasticsearch__.index_document }
   end
 end

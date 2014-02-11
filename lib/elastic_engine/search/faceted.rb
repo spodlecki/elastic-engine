@@ -26,28 +26,6 @@ module ElasticEngine
         
         __load_custom_facet_configuration unless args[:type].nil?
       end
-
-      # Add a facet to the query
-      # {name}   ~ A Title for the facets (example: 'keywords')
-      # {field}  ~ Actual field to search (example: 'keywords.id')
-      def facet(name, field)
-        @query[:body][:facets] ||= {}
-        @query[:body][:facets].merge!({
-            name.to_sym => {
-              terms: {
-                field: field
-              }.merge(size: 70)
-            }
-        })
-        self
-      end
-
-      # Pass params to module. Using Strong Parameters is recommended
-      #
-      def set_params(params)
-        @params = Search::Params.new(self, params)
-        self
-      end
       
       # Perform query to elastic search server(s)
       #
@@ -75,7 +53,7 @@ module ElasticEngine
         begin
           @facet_klass = "#{@facet_config_type.classify}Facets".constantize.new
         rescue
-          @facet_klass = "BaseFacets".constantize.new
+          @facet_klass = "ElasticEngine::Search::BaseFacets".constantize.new
         end
 
         @facet_klass.facets.each do |k,v|
@@ -86,7 +64,7 @@ module ElasticEngine
         apply_facet_filters
       end
       def apply_facet_filters
-        @params.build_search_facet_filters(@facet_klass.facets)
+        @params && @params.build_search_facet_filters(@facet_klass.facets)
       end
       def apply_default_filters
         @facet_klass.default_filter.each do |f|

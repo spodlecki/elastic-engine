@@ -13,7 +13,7 @@ module ElasticEngine
                   :query
 
       include Enumerable
-      extend  ElasticEngine::Support::Forwardable
+      # extend  ElasticEngine::Support::Forwardable
       include ElasticEngine::Support::Pagination
 
       # forward :results, :each, :empty?, :size, :slice, :[], :to_ary

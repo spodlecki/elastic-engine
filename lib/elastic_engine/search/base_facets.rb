@@ -14,7 +14,16 @@ module ElasticEngine
       # ret << { :term => { :published => true } }
       # ret
       def default_filter
+        []
+      end
 
+      # Default order is to be used to set a default up.
+      # {
+      #   'recommended' => {order: :asc},
+      #   'published_at' => {order: :desc}
+      # }
+      def default_order
+        {}
       end
     end
   end

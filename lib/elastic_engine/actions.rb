@@ -1,0 +1,1 @@
+Dir[ File.expand_path('../actions/*.rb', __FILE__) ].each { |f| require f }

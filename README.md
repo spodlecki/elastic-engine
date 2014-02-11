@@ -46,7 +46,8 @@ When you have a type as "person" create a class like below:
         # [{id: <id>, name: <name>}]
       end
       def faceted_body_types(args = {})
-        Banner.published.where('banners.bannerable_type = ? AND banners.bannerable_id = ?', 'Site', args[:site_id]).select('DISTINCT CONCAT(width,\'x\',height) as size').order('CONCAT(width,\'x\',height) ASC').map{|banner| {id: banner.size, term: banner.size} }
+        # Return a collection:
+        # [{id: <id>, name: <name>}]
       end
       
       def default_filter

@@ -82,7 +82,7 @@ Basic faceted search with no customization options.
 
 There are other initializer params available for faceted navigation.
 
-The facet\_arguments attribute will send public\_send("faceted\_#{facet_name}", {key: value}) to the Facet Configuration setup. This will allow you to pass special params & settings to the facet gathering methods.
+The facet\_arguments attribute will send public\_send("faceted\_#{facet_name}", {key: value}) to the [Facet Configuration](#setting-up-config-for-facets) setup. This will allow you to pass special params & settings to the facet gathering methods.
 
     facet_arguments: {
       facet_name: {key: value}

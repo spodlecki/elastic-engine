@@ -1,11 +1,10 @@
 require 'kaminari'
-
 require 'elasticsearch'
 require 'hashie'
 
+require 'elastic_engine/configuration'
 require 'elastic_engine/actions'
 require 'elastic_engine/version'
-require 'elastic_engine/configuration'
 require 'elastic_engine/support/forwardable'
 require 'elastic_engine/support/pagination'
 require 'elastic_engine/support/utils'
@@ -21,3 +20,6 @@ require 'elastic_engine/response/facet_group'
 require 'elastic_engine/response/facet_term'
 require 'elastic_engine/response/result'
 require 'elastic_engine/response/results'
+
+module ElasticEngine
+end

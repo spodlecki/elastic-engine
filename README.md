@@ -7,6 +7,10 @@ Include the following gems within your Gemfile
     gem "elastic-engine", git: "git@github.com:viperdezigns/elastic-engine.git"
 
 ## Usage
+Require elastic_engine in **application.rb**
+
+    require 'elastic_engine'
+
 Create a file in initializers **elasticsearch.rb**
 
     ElasticEngine::Configuration.config do |config|

@@ -3,7 +3,6 @@
 ## Installation
 Include the following gems within your Gemfile
 
-    gem "elasticsearch", git: "git@github.com:elasticsearch/elasticsearch-ruby.git", branch: '0.4'
     gem "elastic-engine", git: "git@github.com:viperdezigns/elastic-engine.git"
 
 ## Usage

@@ -80,6 +80,16 @@ Basic faceted search with no customization options.
       .search
     @facets = @people.facets
 
+There are other initializer params available for faceted navigation.
+
+The facet\_arguments attribute will send public\_send("faceted\_#{facet_name}", {key: value}) to the Facet Configuration setup. This will allow you to pass special params & settings to the facet gathering methods.
+
+    facet_arguments: {
+      facet_name: {key: value}
+      facet_name2: {key: value}
+    }
+
+
 #### View (example in HAML)
 To display facets & counts in a Bootstrap 3 stacked nav pill:
 

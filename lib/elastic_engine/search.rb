@@ -13,7 +13,7 @@ module ElasticEngine
         raise "Arguents need to be a hash when initializing search!" unless args.is_a?(Hash)
         @client = Configuration.client
         @index = args[:index] || Configuration.index
-        @types = args[:type]
+        @types = args[:type] =~ /\A[a-z_,]+\z/ ? args[:type] : nil
 
         @query = { index: @index, type: @types, body: {} }
       end

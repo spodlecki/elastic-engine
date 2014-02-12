@@ -39,8 +39,13 @@ module ElasticEngine
         search.params.select_operator(group_param_string)
       end
 
+      # Make sure to check if there are values, or you'll get a blank pill
+      #
+      def can_build_pill?
+        pill_text.present?
+      end
       def pill_text
-        terms.reject{ |x| !x.selected? }.collect(&:name).join(" #{operator_for.to_s.upcase} ")
+        @pill_text ||= terms.reject{ |x| !x.selected? }.collect(&:name).join(" #{operator_for.to_s.upcase} ")
       end
       def pill_url
         {}

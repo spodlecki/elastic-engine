@@ -66,6 +66,21 @@ When you have a type as "person" create a class like below:
       end
     end
 
+### Regular Searching (just normal filters and queries)
+As with all of the base engine, options are chainable.
+
+    # Prep the engine for a JSON request
+    @people = ElasticEngine::Search::Base.new(type: 'people')
+      .match_all
+      # http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-terms-filter.html#_execution_mode
+      # filter(field, value(s), filter_operation, filter_type, execution)
+      .filter('keywords.id', [7], :and, :ids, :or)
+      .paginate(params[:page], 55)
+      .search
+
+    # Makes the actual call to ElasticSearch Server
+    @results = @people.results
+
 ### Faceted Searching
 All search options are chainable. To view a list, go to lib/elastic_engine/actions. Each file has plenty of comments in the code
 
@@ -107,6 +122,30 @@ To access Results: **the result is NOT from ActiveRecord, it is the _source from
     -@people.results.each do |person|
       =person.name
 
+To display pills in groups (Bootstrap 3 css):
+
+    -if @facets.any?{|x| x.can_build_pill? }
+      .well
+        %strong current filters
+        -@facets.each do |facet_group|
+          -if facet_group.can_build_pill?
+            %a.label.label-info{href: url_for(params.except(facet_group.key))}
+              =facet_group.pill_text
+              %span.text-muted
+                &times;
+
+To display pills individually:
+
+    -if @facets.any?{|x| x.can_build_pill? }
+      .well
+        %strong current filters
+        -@facets.each do |facet_group|
+          -facet_group.terms.each do |term|
+            -if term.pill_text
+              %a.label.label-info{href: url_for(params.except(term.group.key).merge(term.pill_url))}
+                =term.pill_text
+                %span.text-muted
+                  &times;
 
 ## Disclaimer
 
@@ -122,7 +161,6 @@ The reason I've made this into a gem is simple. We were using Tire (now [retire]
 
 ## TODO
 
-  - Build Faceted Nav pills
   - Ability to validate parameters/facet terms within faceted config templates (RegEx)
   - Write more complete tests
   - Add more indepth actions

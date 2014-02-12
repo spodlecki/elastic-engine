@@ -4,6 +4,42 @@ describe ElasticEngine::Search::Faceted do
   before(:all) do
     SeedMaster.apply_database_seeds(10)
   end
+  ['|',','].each do |operator_type|
+    describe "results with #{operator_type} params" do
+      before(:each) do
+        @tags = Tag.first(4)
+        params = {
+          tags: @tags.collect(&:id).join(operator_type)
+        }
+        @klass = ElasticEngine::Search::Faceted.new type: 'person', params: params
+      end
+      describe "faceted results" do
+        before(:each) do
+          @result = @klass.search
+        end
+        it "should have many facets" do
+          @result.facets.count.should eq(2)
+        end
+        describe "facet_group" do
+          before(:each) do
+            @facet_group = @result.facets.first
+            @facet_group.key.should eq(:tags)
+          end
+          it "should build a pill text with selected tags" do
+            @facet_group.pill_text.should eq( @tags.collect(&:name).join(" #{operator_type == '|' ? 'OR' : 'AND'} "))
+          end
+          describe "group_param_values" do
+            it "should return an array" do
+              @facet_group.group_param_values.should be_a(Array)
+            end
+            it "should match a group of ids" do
+              @tags.collect(&:id).map(&:to_s).should eq(@facet_group.group_param_values)
+            end
+          end
+        end
+      end
+    end
+  end
   describe "basic results" do
     before(:each) do
       @klass = ElasticEngine::Search::Faceted.new type: 'person'

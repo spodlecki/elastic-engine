@@ -39,6 +39,12 @@ module ElasticEngine
         search.params.select_operator(group_param_string)
       end
 
+      def pill_text
+        terms.reject{ |x| !x.selected? }.collect(&:name).join(" #{operator_for.to_s.upcase} ")
+      end
+      def pill_url
+        {}
+      end
       private
 
         # Returns the title & operator of the facet group

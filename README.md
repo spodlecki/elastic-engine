@@ -50,7 +50,7 @@ When you have a type as "person" create a class like below:
       end
       # Add validation to keywords facet
       def faceted_keywords_validation(value)
-        !!(value =~ /\A\[0-9]+Z/)
+        !!(value =~ /\A[0-9]+\z/)
       end
 
       def faceted_body_types(args = {})
@@ -59,7 +59,7 @@ When you have a type as "person" create a class like below:
       end
       # Add validation to body_types facet
       def faceted_body_types_validation(value)
-        !!(value =~ /\A\[0-9]+Z/)
+        !!(value =~ /\A[0-9]+\z/)
       end
 
       def default_filter

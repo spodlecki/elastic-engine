@@ -12,7 +12,7 @@ module ElasticEngine
       # @param attributes [Hash] A Hash with document properties
       #
       def initialize(attributes={})
-        @result = Hashie::Mash.new(attributes)
+        @result = Hashie::Mash.new(attributes['_source'])
       end
 
       # Delegate methods to `@result` or `@result._source`
@@ -21,8 +21,6 @@ module ElasticEngine
         case
         when @result.respond_to?(method_name.to_sym)
           @result.__send__ method_name.to_sym, *arguments
-        when @result._source && @result._source.respond_to?(method_name.to_sym)
-          @result._source.__send__ method_name.to_sym, *arguments
         else
           super
         end
@@ -32,7 +30,6 @@ module ElasticEngine
       #
       def respond_to?(method_name, include_private = false)
         @result.respond_to?(method_name.to_sym) || \
-        @result._source && @result._source.respond_to?(method_name.to_sym) || \
         super
       end
 

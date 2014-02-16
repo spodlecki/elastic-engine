@@ -13,13 +13,13 @@ module ElasticEngine
       forward :results, :each, :empty?, :size, :slice, :[], :to_a, :to_ary
 
       def initialize(response)
-        @response  = response
+        @response = response
       end
 
       # Returns the {Results} collection
       #
       def results
-        @results  = response.response['hits']['hits'].map { |hit| Result.new(hit) }
+        @results ||= response.response['hits']['hits'].map { |hit| Result.new(hit) }
       end
       
       # Returns the total number of hits

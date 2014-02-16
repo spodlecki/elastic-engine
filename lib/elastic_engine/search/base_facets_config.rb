@@ -11,12 +11,12 @@ module ElasticEngine
         def facets
           @facets || []
         end
-        def facet(name, field, operator, title)
+        def facet(name, field, type, title)
           @facets ||= {}
           @facets.merge!({
             name.to_sym => {
               field: field,
-              operator: operator,
+              type: type,
               title: title
             }
           })

@@ -30,7 +30,7 @@ module ElasticEngine
 
       def url_params
         if selected?
-          case group.operator
+          case group.type
           when 'multivalue' then remove_multivalue
           when 'multivalue_and' then remove_multivalue(:and)
           when 'multivalue_or'  then remove_multivalue(:or)
@@ -38,7 +38,7 @@ module ElasticEngine
           # else                  raise UnknownSelectableType.new "Unknown selectable type for #{param_key} in #{group.type}"
           end
         else
-          case group.operator
+          case group.type
           when 'multivalue'     then add_multivalue
           when 'multivalue_and' then add_multivalue(:and)
           when 'multivalue_or'  then add_multivalue(:or)
@@ -73,7 +73,7 @@ module ElasticEngine
       #   self.id = 3
       # => {group.key.to_sym => '1|4'}
       def remove_multivalue(logical_operator=nil)
-        logical_operator = group.operator_for
+        logical_operator ||= group.operator_for
 
         p = group.group_param_values
         if p.count <= 1
@@ -96,7 +96,7 @@ module ElasticEngine
       #   self.id = 7
       # => {group.key.to_sym => '1|3|4|7'}
       def add_multivalue(logical_operator=nil)
-        logical_operator = group.operator_for# if logical_operator.nil?
+        logical_operator ||= group.operator_for
 
         if group_param_values.empty?
           add_singlevalue

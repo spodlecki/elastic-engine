@@ -1,7 +1,7 @@
 module ElasticEngine
   module Response
     class FacetGroup
-      attr_reader :search, :key, :title, :operator,
+      attr_reader :search, :key, :title, :type,
                   :result_terms
       
       # Initialize the FacetGroup
@@ -12,7 +12,7 @@ module ElasticEngine
         @search = search
         @key = key.to_sym
         @result_terms = result_hit_mapping(facet_data['terms'])
-        find_title_and_operator
+        find_title_and_type
       end
 
       # Collection of facets
@@ -36,7 +36,7 @@ module ElasticEngine
       # Determines operator (and/or) for current selection
       #
       def operator_for
-        search.params.select_operator(group_param_string)
+        search.params.fetch_operator_for(type, group_param_string)
       end
 
       # Make sure to check if there are values, or you'll get a blank pill
@@ -52,18 +52,18 @@ module ElasticEngine
       end
       private
 
-        # Returns the title & operator of the facet group
+        # Returns the title & type of the facet group
         # This is applied within the Facet Configs
         #
-        def find_title_and_operator
+        def find_title_and_type
           @title = nil
-          @operator = nil
+          @type = nil
           return nil unless search.facet_klass.respond_to?(:facets)
 
           __res = search.facet_klass.facets.select{|key,v| key.to_s.downcase == @key.to_s.downcase }
           return unless __res
           @title = __res[@key].fetch(:title, @key.to_s.humanize)
-          @operator = __res[@key].fetch(:operator, nil)
+          @type = __res[@key].fetch(:type, nil)
         end
         
         # Build out our facet terms. If no facet configuration is found, we will just use ElasticSearch's fields.

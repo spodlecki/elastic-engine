@@ -48,11 +48,20 @@ When you have a type as "person" create a class like below:
         # Return a collection:
         # [{id: <id>, name: <name>}]
       end
+      # Add validation to keywords facet
+      def faceted_keywords_validation(value)
+        !!(value =~ /\A\[0-9]+Z/)
+      end
+
       def faceted_body_types(args = {})
         # Return a collection:
         # [{id: <id>, name: <name>}]
       end
-      
+      # Add validation to body_types facet
+      def faceted_body_types_validation(value)
+        !!(value =~ /\A\[0-9]+Z/)
+      end
+
       def default_filter
         ret = Array.new
         ret << { :type => { :value => 'person' } }
@@ -161,7 +170,7 @@ The reason I've made this into a gem is simple. We were using Tire (now [retire]
 
 ## TODO
 
-  - Ability to validate parameters/facet terms within faceted config templates (RegEx)
+  - ~~Ability to validate parameters/facet terms within faceted config templates (RegEx)~~
   - Write more complete tests
   - Add more indepth actions
     - [range filter](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html)

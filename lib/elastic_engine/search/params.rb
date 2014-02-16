@@ -19,7 +19,7 @@ module ElasticEngine
       #
       def initialize(search, params)
         @search = search
-        @terms = whitelisted_and_validated_params(params)
+        @terms = whitelist_and_validate_params(params)
       end
 
       # Fetch current params for a given facet
@@ -28,9 +28,22 @@ module ElasticEngine
         @terms.fetch(key.to_sym, '')
       end
 
+      def fetch_operator_for(faceted_config_operator, values)
+        case faceted_config_operator
+          when "multivalue"
+            select_operator_key(values)
+          when "multivalue_and"
+            :and
+          when "multivalue_or"
+            :or
+          when "exclusive_or"
+            nil
+        end
+      end
+
       # Cycle mappings to find the current selector. Defaults to :or
       #
-      def select_operator(values)
+      def select_operator_key(values)
         self.class.operators.each do |k,v|
           return k if values.include?(v)
         end
@@ -38,23 +51,57 @@ module ElasticEngine
       end
 
       # Initial building for faceted search. This will apply given filters based on params passed to the search engine
-      # TODO; Validate values for each term. Should perform common checks is_integer, is_alpha
+      # {facets_klass}        ~ Facet Config Class (from README ex: "PersonFacet")
       #
-      def build_search_facet_filters(facets)
-        facets.each do |k,v|
-          values = fetch_params_for(k)
-          next if values.blank?
-          _operator = select_operator(values)
+      def build_search_facet_filters(facets_klass)
+        facets_klass.facets.each do |facet_key,facet_config|
+          # Gather values from params
+          values = fetch_params_for(facet_key)
+          next if values.blank? #dont process blank params, can create blank pills, which is ugly UX
 
-          search.filter_with_execution(v[:field], values.split( self.class.operator_split(_operator) ).map{|t| set_elasticsearch_value(t) }.uniq, :and, :terms, _operator)
+          _operator = fetch_operator_for(facet_config[:type], values)
+          
+          values = values.split(/[#{Response::FacetTerm::OPERATOR_MAPPING.values.join}]/) unless _operator.nil?
+
+          # apply search filter for the facet
+          search.filter_with_execution(
+            facet_config[:field],
+            values,
+            :and,
+            values.is_a?(Array) ? :terms : :term,
+            _operator
+          ) unless values.empty?
         end
       end
 
     private
-      # TODO; Whitelist specific params. This may be best served via the controller though using Strong Params
+      def whitelist_and_validate_params(params)
+        return params unless search.facet_klass.respond_to?(:facets)
+        whitelisted_params = Hash.new
+
+        params.each do |param_key,param_value|
+          facet = search.facet_klass.facets.select{|facet_key,facet_config_values| param_key.to_s == facet_key.to_s}
+          facet_config = facet.fetch(param_key.to_sym, nil)
+          next unless facet_config
+          _operator = fetch_operator_for(facet_config[:type], param_value)
+          whitelisted_params.merge!(param_key.to_sym => validated_param_values(search.facet_klass, param_key, _operator, param_value))
+        end
+        whitelisted_params
+      end
+
+      # Method validated_param_values
+      # {facets_klass} [Facet Config]         ~ <type>Facets config class
+      # {facet_key} [SYMBOL]                  ~ The name of the facet
+      # {_operator} [SYMBOL/NIL]              ~ Defined by the type of facet
+      # {values}     [STRING]                 ~ The entire string from the params
       #
-      def whitelisted_and_validated_params(terms)
-        terms
+      def validated_param_values(facets_klass, facet_key, _operator, values)        
+        _split_values_with = _operator ? self.class.operator_split(_operator) : ''
+        values = _split_values_with.blank? ? [values] : values.split(_split_values_with)
+        values.map!{|v| set_elasticsearch_value(v) }
+
+        values.reject!{|v| !facets_klass.public_send("faceted_#{facet_key}_validation", v) } if facets_klass.respond_to?(:"faceted_#{facet_key}_validation")
+        values.uniq.join(_split_values_with)
       end
 
       # ElasticSearch returns a t/f for a boolean, we convert this back to a TrueFalseClass for the query filters

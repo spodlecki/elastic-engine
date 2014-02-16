@@ -3,7 +3,7 @@
 module ElasticEngine
   module Search
     class Faceted < Base
-      attr_reader :filter_facets, :facet_config_type, :facet_klass, :facet_arguments,
+      attr_reader :filter_facets, :facet_config_type, :facet_arguments,
                   :params
 
       # Initialize a faceted search to ElasticSearch
@@ -17,16 +17,22 @@ module ElasticEngine
       #                       { <facet_name>: {<hash_of_arguments} }
       def initialize(args)
         super(args)
-        @facet_arguments = args[:facet_arguments] || {}
-        @facet_klass = nil
-        @facet_params = nil
-        @filter_facets = args[:filter_facets] || true
-        @params = args[:params].present? ? Search::Params.new(self, args[:params]) : nil
+
         @facet_config_type  = args[:facet_config_type] || args[:type]
-        
-        __load_custom_facet_configuration unless args[:type].nil?
+        @facet_arguments = args[:facet_arguments] || {}
+        @filter_facets = args[:filter_facets] || true
+        @params = Search::Params.new(self, args[:params].try(:to_hash)) if args[:params]
+
+        __load_custom_facet_configuration
       end
       
+      def facet_klass
+        @facet_klass ||= begin
+          "#{@facet_config_type.classify}Facets".constantize.new
+        rescue
+          "ElasticEngine::Search::BaseFacets".constantize.new
+        end
+      end
       # Perform query to elastic search server(s)
       #
       def search
@@ -40,7 +46,7 @@ module ElasticEngine
       # By default, this occurs when we have facets AND filters applied to the search query.
       # You can turn this off by initializing with __filter_facets equal to false
       def prepare_facet_filters!
-        # TODO; This could explode....
+        # TODO; This could explode....??
         return unless @filter_facets && @query[:body][:facets] && @query[:body][:filter]
         @query[:body][:facets].each do |k,v|
           @query[:body][:facets][k].merge!({
@@ -50,13 +56,7 @@ module ElasticEngine
       end
       def __load_custom_facet_configuration
         return unless @facet_config_type =~ /\A[a-z_]+\z/
-        begin
-          @facet_klass = "#{@facet_config_type.classify}Facets".constantize.new
-        rescue
-          @facet_klass = "ElasticEngine::Search::BaseFacets".constantize.new
-        end
-
-        @facet_klass.facets.each do |k,v|
+        facet_klass.facets.each do |k,v|
           facet(k, v[:field])
         end
         apply_default_filters
@@ -64,10 +64,10 @@ module ElasticEngine
         apply_facet_filters
       end
       def apply_facet_filters
-        @params && @params.build_search_facet_filters(@facet_klass.facets)
+        @params && @params.build_search_facet_filters(facet_klass)
       end
       def apply_default_filters
-        @facet_klass.default_filter.each do |f|
+        facet_klass.default_filter.each do |f|
           @query[:body][:filter] ||= {}
           @query[:body][:filter][:and] ||= []
 
@@ -75,9 +75,9 @@ module ElasticEngine
         end if @facet_klass.default_filter.any?
       end
       def apply_default_orders
-        @facet_klass.default_order.each do |k,v|
+        facet_klass.default_order.each do |k,v|
           order(k, v[:order])
-        end if @facet_klass.default_order.any?
+        end if facet_klass.default_order.any?
       end
     end
   end

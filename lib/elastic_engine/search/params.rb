@@ -81,6 +81,7 @@ module ElasticEngine
 
         params.each do |param_key,param_value|
           facet = search.facet_klass.facets.select{|facet_key,facet_config_values| param_key.to_s == facet_key.to_s}
+          next unless facet.any?
           facet_config = facet.fetch(param_key.to_sym, nil)
           next unless facet_config
           _operator = fetch_operator_for(facet_config[:type], param_value)

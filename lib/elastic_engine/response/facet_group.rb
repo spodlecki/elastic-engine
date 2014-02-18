@@ -71,7 +71,7 @@ module ElasticEngine
         def build_term_values
           term_values = fetch_facet_terms_for(@key)
           # Return basic elasticsearch result terms if we dont have method defined
-          return generate_facet_terms_by_result unless term_values.any?
+          return generate_facet_terms_by_result unless term_values
 
           term_values.map { |term| FacetTerm.new(group: self, id: term.fetch(:id), term: term.fetch(:term), count: fetch_count_for( term.fetch(:id) ) ) }
         end
@@ -83,7 +83,7 @@ module ElasticEngine
           search.facet_klass.send("faceted_#{facet_group_name}", search.facet_arguments.fetch(facet_group_name.to_sym, nil) ) if search.facet_klass.respond_to?("faceted_#{facet_group_name}".to_sym)
         end
         def generate_facet_terms_by_result
-          @result_terms.map { |facet_term,facet_count| FacetTerm.new(id: facet_term, term: facet_term, count: facet_count) }
+          @result_terms.map { |facet_term,facet_count| FacetTerm.new(group: self, id: facet_term, term: facet_term, count: facet_count) }
         end
         
         # Matches ElasticSearch's facet result res["term"] to a specific id passed through
@@ -97,10 +97,10 @@ module ElasticEngine
         # This method cleans this result and combines the counts to be correct & valid
         #
         def result_hit_mapping(result_facets)
-          @mapping ||= result_facets.each_with_object(Hash.new(0)) do |result, hash|
-            term = result['term']
-            term = term.to_s.downcase
-            hash[term] += result['count']
+          @mapping ||= result_facets.each_with_object(Hash.new(0)) do |_result, hash|
+            _term = _result['term']
+            _term = _term.to_s.downcase
+            hash[_term] += _result['count']
           end
         end
     end

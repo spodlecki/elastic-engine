@@ -1,4 +1,13 @@
 ActiveRecord::Schema.define(version: 1) do
+  create_table :vehicles do |t|
+    t.string     :name
+    t.timestamps
+  end
+  create_table :tags_vehicles do |t|
+    t.integer  :vehicle_id
+    t.integer :tag_id
+  end
+
   create_table :people do |t|
     t.string     :name
     t.timestamps

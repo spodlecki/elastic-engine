@@ -1,13 +1,15 @@
 module ElasticEngine
   module Search
     class Params
-      attr_reader :search, :terms
+      attr_reader :search, :terms,
+                  :sort, :limit, :query_string
       
       # Returns hash of available operators
       #
       def self.operators
         ElasticEngine::Response::FacetTerm::OPERATOR_MAPPING
       end
+
       # Returns the split character based on selection
       # Default to OR
       #
@@ -20,6 +22,15 @@ module ElasticEngine
       def initialize(search, params)
         @search = search
         @terms = whitelist_and_validate_params(params)
+        
+        # TODO; Custom sort variable
+        @sort = validate_sort_param(params["sort"])
+
+        # TODO; Custom limit param
+        @limit = validate_limit_param(params["limit"])
+
+        # TODO; Custom query param
+        @query_string = validate_query_string(params["term"])
       end
 
       # Fetch current params for a given facet
@@ -28,6 +39,8 @@ module ElasticEngine
         @terms.fetch(key.to_sym, '')
       end
 
+      # Get the operator for a specific param key
+      #
       def fetch_operator_for(faceted_config_operator, values)
         case faceted_config_operator
           when "multivalue"
@@ -73,8 +86,69 @@ module ElasticEngine
           ) unless values.empty?
         end
       end
+      
+      # Build the query for ordering
+      #
+      def build_order(facet_klass)
+        return if sort.nil?
+        sort.fetch(:search, []).each do |k,v|
+          search.order(k, v.fetch(:order, :desc))
+        end
+      end
 
+      # Apply a limit to the search based on params
+      #
+      def build_limit(facet_klass)
+        return if limit.nil? || (search.query && search.query.fetch(:body) && search.query[:body].fetch(:size, false))
+        search.limit(limit)
+      end
+
+      # Apply a query string search based on config
+      def build_query_string_search(facet_klass)
+        return unless query_string && search.facet_klass.respond_to?(:query_string_search) && search.facet_klass.query_string_search
+
+        fields = search.facet_klass.query_string_search.fetch(:field)
+        
+        search.multi_match(fields, query_string) if fields.is_a?(Array) && fields.any?
+        search.match(field, query_string) if fields.is_a?(String)
+      end
     private
+      def validate_query_string(query_string_value)
+        return nil unless !!(query_string_value =~ /[^\s]{1,}/)
+        query_string_value
+      end
+      # Run the sort param through a validation
+      #
+      def validate_sort_param(sort_param_value)
+        return sort_param_value unless search.facet_klass.respond_to?(:available_sorts)
+        # Get selected sort
+        _sort_ = search.facet_klass.available_sorts.select{|x| x.fetch(:value, '') == sort_param_value }.first
+        # Get default if no sort existed
+        _sort_ = search.facet_klass.available_sorts.select{|x| x.fetch(:default, false) }.first unless _sort_
+        # Grab the first sort if none of the above apply
+        _sort_ = search.facet_klass.available_sorts.first unless _sort_
+        _sort_
+      end
+
+      # Run the limit param through a validation process
+      # Fall back to defaults if nothing applies
+      #
+      def validate_limit_param(limit)
+        # Just give the limit of the request if there is no facet_klass
+        return limit unless search.facet_klass.respond_to?(:available_limits)
+
+        if search.facet_klass.limits_for_form.include?(limit.to_i)
+          limit.to_i
+        else
+          _default_ = search.facet_klass.available_limits.select{|x| x.fetch(:default, false) }.first
+          # If default does not exist, select the first
+          _default_ = search.facet_klass.available_limits.first unless _default_
+          _default_.fetch(:value, nil)
+        end
+      rescue
+        nil
+      end
+
       def whitelist_and_validate_params(params)
         return params unless search.facet_klass.respond_to?(:facets)
         whitelisted_params = Hash.new

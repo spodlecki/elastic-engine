@@ -60,8 +60,10 @@ module ElasticEngine
           facet(k, v[:field])
         end
         apply_default_filters
-        apply_default_orders
+        apply_order
+        apply_limit
         apply_facet_filters
+        apply_query_string
       end
       def apply_facet_filters
         @params && @params.build_search_facet_filters(facet_klass)
@@ -74,10 +76,14 @@ module ElasticEngine
           @query[:body][:filter][:and] << f
         end if @facet_klass.default_filter.any?
       end
-      def apply_default_orders
-        facet_klass.default_order.each do |k,v|
-          order(k, v[:order])
-        end if facet_klass.default_order.any?
+      def apply_order
+        @params && @params.build_order(facet_klass)
+      end
+      def apply_limit
+        @params && @params.build_limit(facet_klass)
+      end
+      def apply_query_string
+        @params && @params.build_query_string_search(facet_klass)
       end
     end
   end

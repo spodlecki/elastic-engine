@@ -11,6 +11,8 @@ module ElasticEngine
     def multi_match(__fields, __string, __options = {}, __match_type = :match)
       __match_type = Support::Utils.__validate_selection_with_raise(__match_type.to_sym, Support::Utils::MATCH_TYPES)
       __fields = [__fields] unless __fields.is_a?(Array)
+      __string = Support::Utils.sanitize_string_for_elasticsearch_string_query(__string)
+      
       @query[:body][:query] ||= {}
       @query[:body][:query].merge!({
         multi_match: {

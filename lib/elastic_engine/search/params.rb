@@ -110,7 +110,7 @@ module ElasticEngine
         fields = search.facet_klass.query_string_search.fetch(:field)
         
         search.multi_match(fields, query_string) if fields.is_a?(Array) && fields.any?
-        search.match(field, query_string) if fields.is_a?(String)
+        search.match(fields, query_string) if fields.is_a?(String)
       end
     private
       def validate_query_string(query_string_value)

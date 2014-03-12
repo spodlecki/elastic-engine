@@ -42,16 +42,18 @@ module ElasticEngine
       def facets
         @facets ||= facet_groups
       end
+      
       # Returns the hash that was sent to ElasticSearch
       def query
         @query ||= search.query
       end
+      
       # Returns the "took" time
       #
       def took
         response['took']
       end
-
+      
       # Returns whether the response timed out
       #
       def timed_out

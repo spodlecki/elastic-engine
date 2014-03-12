@@ -17,7 +17,10 @@ module ElasticEngine
 
         @query = { index: @index, type: @types, body: {} }
       end
-      
+      def raw_query=(q)
+        raise "Query needs to be a hash when submitting a raw query!" unless q.is_a?(Hash)
+        @query[:body].merge!(q)
+      end
       def execute!
         client.search(@query)
       end

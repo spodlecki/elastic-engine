@@ -5,9 +5,10 @@ module ElasticEngine
       # Known options for elastic search (such as types, terms, match queries)
       MATCH_TYPES = [:match, :match_phrase, :match_phrase_prefix]
       FILTER_OPERATORS = [:and,:or,:not]
-      FILTER_TYPES = [:term,:terms,:prefix,:type,:ids]
+      FILTER_TYPES = [:term,:terms,:prefix,:type,:ids,:range,:missing]
       SORT_DIRECTIONS = [:asc, :desc]
       EXEC_TYPES = [:and,:or]
+      BOOL_TYPES = [:should,:must,:must_not]
       
       def __validate_integer(int, default = 0, positive_only = true)
         int = int.try(:to_i) if int =~ /\A-?[0-9]+\z/

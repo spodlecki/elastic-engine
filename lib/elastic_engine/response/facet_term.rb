@@ -25,7 +25,7 @@ module ElasticEngine
         OPERATOR_MAPPING[op]
       end
       def selected?
-        @selected ||= !!group_param_values.include?(@id)
+        @selected ||= !!group_param_values.include?(translate_id)
       end
 
       def url_params
@@ -112,6 +112,17 @@ module ElasticEngine
       # => {group.key.to_sym => '7'}
       def add_singlevalue
         { group.key.to_sym => @id }
+      end
+    private
+      def translate_id
+        case @id
+          when "t"
+            "true"
+          when "f"
+            "false"
+          else
+            @id
+        end
       end
     end
   end

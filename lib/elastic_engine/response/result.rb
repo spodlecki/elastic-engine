@@ -42,8 +42,14 @@ module ElasticEngine
         @result.as_json(options)
       end
 
-      # TODO: #to_s, #inspect, with support for Pry
-
+      def cache_key
+        if respond_to?(:updated_at)
+          timestamp = Time.parse(updated_at).utc.to_s(:number)
+          "#{_type}/#{id}-#{timestamp}"
+        else
+          "#{_type}/#{id}"
+        end
+      end
     end
   end
 end

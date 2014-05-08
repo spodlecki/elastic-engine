@@ -4,7 +4,7 @@ module ElasticEngine
     # {__field}     [STRING]    ~ Actual field to search (example: 'keywords.id')
     # {__value}     [MIXED]     ~ Value to search for
     # {__operator}  [STRING]    ~ Apply the operator to the filter group [:and,:or,:not]
-    # {__type}      [STRING]    ~ Apply a type of filter [:term,:terms,:prefix,:type,:ids]
+    # {__type}      [STRING]    ~ Apply a type of filter [:term,:terms,:prefix,:type,:ids,:range,:missing,:exists]
     # {__execution}  [STRING]   ~ Search execution [:and, :or] that applies to the specific filter
     # @ http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-filters.html
     #

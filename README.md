@@ -1,5 +1,11 @@
 ## ElasticSearch Faceted Search
 
+### UPDATE:
+
+While developing this Gem, it was in the very early stages of Elasticsearch Model. With capabilities such as direct ES Client communication and multi-model search available, this gem has become a bit over-engineered. It was attempting to do a lot of things, when it can be done through Elasticsearch::Model now.
+
+With that in mind, I'm halting dev on this actual project. The facets, however, are still very useful. I've started a new project that will deal only with the faceted searching. [Elasticsearch::FacetedSearch](https://github.com/spodlecki/elasticsearch-facetedsearch)
+
 ## Installation
 Include the following gems within your Gemfile
 
